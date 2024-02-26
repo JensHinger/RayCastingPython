@@ -11,14 +11,16 @@ class Map:
         pass
 
     def create_test_map(self):
-        self.map_size = 650
+        self.map_size = 1000
 
-        x = [60, 600, 600, 30]
-        y = [60, 20, 600, 620]
+        #    middle walls hori    middle walls      triangles
+        x = [400, 600, 400, 600, 250, 250, 750, 750, 200, 50, 50, 250, 250, 200, 200, 50, 50, 250, 250, 200]
+        y = [600, 600, 400, 400, 200, 800, 200, 800, 800, 950, 950, 950, 950, 800, 200, 50, 50, 50, 50, 200]
 
-        for i in range(len(x)):
+
+        for i in range(0,len(x), 2):
             v_1 = Vector(x[i], y[i])
-            v_2 = Vector(x[(i+1) % len(x)], y[(i+1 )% len(x)])
+            v_2 = Vector(x[i+1], y[i+1])
 
             self.walls.append(Line(v_1, v_2))
 

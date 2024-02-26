@@ -37,13 +37,14 @@ class MainWindow(tk.Tk):
 
         self.draw_map()        
 
+        self.ray_amount = 30
         self.player_r = 5
         self.player_pos = Vector(int(self.map.map_size / 2), int(self.map.map_size / 2))
         self.ray_dir_vecs = []
         self.rays = []
         self.current_intersects = []
 
-        self.init_ray_dir_vecs(6)
+        self.init_ray_dir_vecs(self.ray_amount)
         self.player = self.draw_player(self.player_pos.x, self.player_pos.y)
         
         self.game_canvas.bind("<Motion>", self.move_player)
@@ -74,8 +75,9 @@ class MainWindow(tk.Tk):
     
     def calc_wall_intersect(self):
         q = self.player_pos
-
         for s in self.ray_dir_vecs:
+            found_intersects = []
+
             for w in self.map.walls:
                 p = w.loc_vec
                 r = w.dir_vec
@@ -91,28 +93,39 @@ class MainWindow(tk.Tk):
                     u = ((-p_q) * r) / (-rxs)
                     t = p_qxs / rxs
 
-                    if 0 <= t <= 1:
-                        # TODO Shoudl only show intersects closeset to the player
+                    if 0 <= t <= 1 and u > 0:
+                        found_intersects.append(u)
 
-                        intersect_vec = q + (s * u)
+            if len(found_intersects) > 0:
+                ray_length = min(found_intersects, key=abs)
+            else:
+                ray_length = self.map.map_size * 2
+            intersect_vec = q + (s * ray_length)
 
-                        self.current_intersects.append(
-                            self.game_canvas.create_oval(
-                                intersect_vec.x - 2,
-                                intersect_vec.y - 2,
-                                intersect_vec.x + 2,
-                                intersect_vec.y + 2,
-                                fill="red"
-                            )
-                        )
+            if ray_length < self.map.map_size * 1.5: 
+                self.create_intersect_circle(intersect_vec, 2)
+            self.create_intersect_ray(self.player_pos, intersect_vec)
 
-                        self.rays.append(
-                            self.game_canvas.create_line(
-                                self.player_pos.x, self.player_pos.y,
-                                intersect_vec.x, intersect_vec.y,
-                                fill="#ffffff"
-                            )
-                        )
+    def create_intersect_circle(self, vec, size):
+        self.current_intersects.append(
+                self.game_canvas.create_oval(
+                    vec.x - size,
+                    vec.y - size,
+                    vec.x + size,
+                    vec.y + size,
+                    fill="red"
+                )
+            )
+
+    def create_intersect_ray(self, vec_a, vec_b):
+        self.rays.append(
+                self.game_canvas.create_line(
+                    vec_a.x, vec_a.y,
+                    vec_b.x, vec_b.y,
+                    fill="#ffffff"
+                )
+            )
+
     #
     # Events
     #
