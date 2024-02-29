@@ -74,36 +74,35 @@ class MainWindow(tk.Tk):
         return player
     
     def calc_wall_intersect(self):
-        q = self.player_pos
-        for s in self.ray_dir_vecs:
+        x1, y1 = self.player_pos
+        
+        for ray in self.ray_dir_vecs:
+            x2, y2 = ray + self.player_pos 
             found_intersects = []
 
-            for w in self.map.walls:
-                p = w.loc_vec
-                r = w.dir_vec
+            for wall in self.map.walls:
+                x3, y3 = wall[0]
+                x4, y4 = wall[1]
 
-                rxs = r * s
-                p_q = (q - p)
+                det = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4)
 
-                p_qxs = p_q * s
-
-                if rxs == 0 and p_qxs != 0:
+                if det == 0:
                     continue
-                elif rxs != 0:
-                    u = ((-p_q) * r) / (-rxs)
-                    t = p_qxs / rxs
+                
+                t = ((x1 - x3)*(y3 - y4) - (y1 - y3)*(x3 - x4)) / det
+                u = - (((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3)) / det)
 
-                    if 0 <= t <= 1 and u > 0:
-                        found_intersects.append(u)
+                if 0 <= u <= 1 and t >= 0:
+                    found_intersects.append(t)
 
             if len(found_intersects) > 0:
                 ray_length = min(found_intersects, key=abs)
+                intersect_vec = self.player_pos + (ray * ray_length)
+                self.create_intersect_circle(intersect_vec, 2)
             else:
                 ray_length = self.map.map_size * 2
-            intersect_vec = q + (s * ray_length)
+                intersect_vec = self.player_pos + (ray * ray_length)
 
-            if ray_length < self.map.map_size * 1.5: 
-                self.create_intersect_circle(intersect_vec, 2)
             self.create_intersect_ray(self.player_pos, intersect_vec)
 
     def create_intersect_circle(self, vec, size):
