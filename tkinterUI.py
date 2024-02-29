@@ -37,7 +37,7 @@ class MainWindow(tk.Tk):
 
         self.draw_map()        
 
-        self.ray_amount = 30
+        self.ray_amount = 360
         self.player_r = 5
         self.player_pos = Vector(int(self.map.map_size / 2), int(self.map.map_size / 2))
         self.ray_dir_vecs = []
@@ -78,7 +78,7 @@ class MainWindow(tk.Tk):
         
         for ray in self.ray_dir_vecs:
             x2, y2 = ray + self.player_pos 
-            found_intersects = []
+            closest_intersect = math.inf
 
             for wall in self.map.walls:
                 x3, y3 = wall[0]
@@ -93,16 +93,12 @@ class MainWindow(tk.Tk):
                 u = - (((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3)) / det)
 
                 if 0 <= u <= 1 and t >= 0:
-                    found_intersects.append(t)
+                    if t < closest_intersect:
+                        closest_intersect = t
 
-            if len(found_intersects) > 0:
-                ray_length = min(found_intersects, key=abs)
-                intersect_vec = self.player_pos + (ray * ray_length)
-                self.create_intersect_circle(intersect_vec, 2)
-            else:
-                ray_length = self.map.map_size * 2
-                intersect_vec = self.player_pos + (ray * ray_length)
-
+            ray_length = max(closest_intersect, 0)
+            intersect_vec = self.player_pos + (ray * ray_length)
+            self.create_intersect_circle(intersect_vec, 2)
             self.create_intersect_ray(self.player_pos, intersect_vec)
 
     def create_intersect_circle(self, vec, size):
